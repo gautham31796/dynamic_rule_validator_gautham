@@ -1,0 +1,8 @@
+{
+  "flatAmount": "document.products.product.plan.eligibilityClass[0].planDesign[0].coverage[0].flatAmount",
+  "coverage": "document.products.product.plan.eligibilityClass[0].planDesign[0].coverage[0].coverage",
+  "policyNumber": "document.products.product.plan.policyNumber",
+  "lateEntrantEOI": "lateEntrantEOI",
+  "dependentCoverage": "dependentCoverage",
+  "employeeType": "employeeType"
+}

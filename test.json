@@ -1,0 +1,6 @@
+{
+    "lateEntrantEOI": true,
+    "enrollmentAboveGIEOI": true,
+    "employeeType": "Employee",
+    "dependentCoverage": ["Spouse" , "Child"]
+}

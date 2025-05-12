@@ -1,0 +1,420 @@
+{
+  "txn": {
+    "name": "Group Certificate",
+    "document": {
+      "documentType": "Word",
+      "templateID": "159649745",
+      "templateName": "NYL Contract Template",
+      "products": {
+        "product": {
+          "productName": "CI",
+          "caseDetails": {
+            "opportunityInformation": {
+              "effectiveDate": "09/17/2025",
+              "anniversaryDate": null
+            }
+          },
+          "account": [
+            {
+              "accountName": "Smoke Test _ DEV",
+              "clientAccountNumber": "2102252",
+              "situsState": "Alabama"
+            }
+          ],
+          "enrollment": {
+            "enrollmentType": "Annual Enrollment"
+          },
+          "policyModel": [
+            {
+              "policyNumber": "GCI",
+              "policySymbol": "5436568",
+              "situsState": "Texas"
+            }
+          ]
+        },
+        "plan": {
+          "productType": "CI",
+          "groupPolicyType": "Alabama Trust",
+          "situsState": "Alabama",
+          "issueState": "Alabama Trust",
+          "origin": "New Coverage",
+          "effectiveDate": "09/17/2025",
+          "policyAnniversaryDate": "09/17",
+          "union": "",
+          "policyNumber": "GCI5436568",
+          "preExistingCondition": "None - Waived",
+          "exclusionsAndLimitations": "None",
+          "numberOfEligibleClasses": 1,
+          "eligibilityClass": [
+            {
+              "classNumber": 1,
+              "eligibilityClassName": "Eligible Class 1",
+              "eligibilityClassDescription": "All active, Full-Time and Part-Time Employees of the Employer regularly working a minimum of 20 hours per week in the United States, who are citizens or permanent resident aliens of the United States.",
+              "employerContributionType": null,
+              "dependentCoverage": [
+                "Spouse",
+                "Child"
+              ],
+              "eligibilityClassType": "voluntary",
+              "employeeType": "Employee",
+              "lifeStatusChangesPermitted": [
+                "Newly Married",
+                "Loss of Spouse",
+                "Birth or Adoption of Child",
+                "Change in Spouse Group Benefits",
+                "Change in Employment Status",
+                "Termination of Spouse Employment"
+              ],
+              "coverageTier": null,
+              "coverageType": null,
+              "taxation": "Post-Tax",
+              "paymentMethod": "",
+              "classChangeEffectiveDate": "On the first of the month after change in class",
+              "multiplePayments": "Both",
+              "lifetimeMaximum": "No Maximum",
+              "continuationOfInsurance": [
+                {
+                  "benefitPeriodType": null,
+                  "employerApprovedLeave": [
+                    {
+                      "maximumBenefitPeriod": 3
+                    }
+                  ],
+                  "familyMedicalLeave": [
+                    {
+                      "maximumBenefitPeriod": 6
+                    }
+                  ],
+                  "sicknessOrInjury": [
+                    {
+                      "maximumBenefitPeriod": 9
+                    }
+                  ],
+                  "sabbatical": null,
+                  "furlough": null,
+                  "quarantine": null,
+                  "reductionInWorkHours": null,
+                  "otherLeaveOfAbsence": [
+                    {
+                      "maximumBenefitPeriod": 12
+                    }
+                  ],
+                  "temporaryLayoff": null,
+                  "strikeOrLaborDispute": null,
+                  "militaryService": null
+                }
+              ],
+              "portability": [
+                {
+                  "portability": "Included",
+                  "portabilityEligibility": "Employee",
+                  "portabilityDuration": "N/A",
+                  "portabilityDurationAge": 70,
+                  "portabilityDurationYears": 3,
+                  "numOfDaysToPortCoverage": "60 Days",
+                  "retireesEligible": false
+                }
+              ],
+              "waiverOfPremium": [
+                {
+                  "disabledBeforeAge": "Age 65",
+                  "disabilityEliminationPeriod": "3 Months",
+                  "disabilityDuration": "12 Months"
+                }
+              ],
+              "eligibilityWaitingPeriod": [
+                {
+                  "eligibilityWaitingPeriod": "1st of Month Coincident With or Following Date of Hire",
+                  "eligibilityWaitingPeriodDays": null,
+                  "eligibilityWaitingPeriodMonths": null,
+                  "eligibilityWaitingPeriodOther": null
+                }
+              ],
+              "healthScreeningBenefit": [
+                {
+                  "affiliatedHealthCareProvider": true,
+                  "contractPeriod": "Calendar",
+                  "allScreeningsPayable": true,
+                  "benefitAmount": "50",
+                  "additionalPctPayable": "100"
+                }
+              ],
+              "insurabilityEOI": [
+                {
+                  "lateEntrantEOI": true,
+                  "enrollmentAboveGIEOI": true
+                }
+              ],
+              "separationPeriods": [
+                {
+                  "recurrenceLimit": "No Limit",
+                  "additionalBenefitPayment": "0 Days",
+                  "criticalIllnessNonCancerRelated": "90 Days",
+                  "cancerRelatedCriticalIllness": "180 Days"
+                }
+              ],
+              "numberOfPlanDesigns": 1,
+              "planDesign": [
+                {
+                  "planDesignName": "Voluntary",
+                  "planDesignId": "UW23004",
+                  "planDesignStructure": "Voluntary",
+                  "childAgeChangeEffectiveDate": null,
+                  "planDesignType": "Enhanced",
+                  "dependentEligibility": null,
+                  "domesticPartnerEligible": null,
+                  "coverage": [
+                    {
+                      "coverageId": "25375",
+                      "coverage": "Employee",
+                      "benefitType": "Flat",
+                      "flatAmount": 1000,
+                      "guaranteedIssueAmt": 1000,
+                      "averageFaceAmount": 1000,
+                      "customerSuppliedVolumes": false,
+                      "recurrence": [
+                        {
+                          "recurrence": "100%"
+                        }
+                      ]
+                    },
+                    {
+                      "coverageId": "25376",
+                      "coverage": "Child",
+                      "chNonFullTimeStudents": 26,
+                      "chFullTimeStudents": 35,
+                      "childAgeChangeEffectiveDate": "Anniversary Date",
+                      "benefitType": "Flat",
+                      "flatAmount": 1000,
+                      "guaranteedIssueAmt": 1000,
+                      "marriedDependentChildrenEligible": false,
+                      "averageFaceAmount": 1000,
+                      "customerSuppliedVolumes": false,
+                      "recurrence": [
+                        {
+                          "recurrence": "100%"
+                        }
+                      ]
+                    },
+                    {
+                      "coverageId": "25377",
+                      "coverage": "Spouse",
+                      "domesticPartnerEligible": false,
+                      "benefitType": "Flat",
+                      "flatAmount": 1000,
+                      "guaranteedIssueAmt": 1000,
+                      "averageFaceAmount": 1000,
+                      "customerSuppliedVolumes": false,
+                      "recurrence": [
+                        {
+                          "recurrence": "100%"
+                        }
+                      ]
+                    }
+                  ],
+                  "rateStructureCI": [
+                    {
+                      "name": "Rate Structure 1",
+                      "selectedPlanDesigns": [
+                        "UW23004"
+                      ],
+                      "ratePresentation": "Two Presentations + Child",
+                      "payrollFrequency": "Monthly",
+                      "otherPayrollFrequency": null,
+                      "rateStructurePlanCI": [
+                        {
+                          "applicableCoverage": "Employee",
+                          "contributionType": "Flat Amt",
+                          "contributionPct": null,
+                          "contributionAmount": 10.0,
+                          "rateBasis": "per $1,000",
+                          "childRateEmbedded": null,
+                          "billedRate": 4.38,
+                          "ageBandApplies": false,
+                          "smokerStatusApplies": false,
+                          "volumeUsedInRating": "Census",
+                          "healthScreeningPremiumPerMember": null,
+                          "miscellaneousPremiumPerMember": null,
+                          "rateStructureEntryCI": null
+                        },
+                        {
+                          "applicableCoverage": "Spouse",
+                          "contributionType": "Flat Amt",
+                          "contributionPct": null,
+                          "contributionAmount": 10.0,
+                          "rateBasis": "per $1,000",
+                          "childRateEmbedded": null,
+                          "billedRate": 4.63,
+                          "ageBandApplies": false,
+                          "smokerStatusApplies": false,
+                          "volumeUsedInRating": "Census",
+                          "healthScreeningPremiumPerMember": null,
+                          "miscellaneousPremiumPerMember": null,
+                          "rateStructureEntryCI": null
+                        },
+                        {
+                          "applicableCoverage": "Child",
+                          "contributionType": "Flat Amt",
+                          "contributionPct": null,
+                          "contributionAmount": 10.0,
+                          "rateBasis": "per $1,000",
+                          "childRateEmbedded": null,
+                          "billedRate": 2.721,
+                          "ageBandApplies": null,
+                          "smokerStatusApplies": null,
+                          "volumeUsedInRating": "Census",
+                          "healthScreeningPremiumPerMember": null,
+                          "miscellaneousPremiumPerMember": null,
+                          "rateStructureEntryCI": null
+                        }
+                      ]
+                    }
+                  ],
+                  "benefits": [
+                    {
+                      "accidentInsurance": {},
+                      "hospitalIndemnity": {},
+                      "criticalIllness": {
+                        "coreCriticalIllnessConditions": [
+                          {
+                            "coronaryArteryDiseaseBypassOrIntervention": null,
+                            "stroke": [
+                              {
+                                "benefitPercentage": 100.0
+                              }
+                            ],
+                            "heartAttack": [
+                              {
+                                "benefitPercentage": 100.0,
+                                "heartAttackIncludesSuddenCardiacArrest": null
+                              }
+                            ],
+                            "coronaryArteryDiseaseWithBypass": [
+                              {
+                                "benefitPercentage": 50.0
+                              }
+                            ],
+                            "coronaryArteryDiseaseWithCoronaryIntervention": [
+                              {
+                                "benefitPercentage": 50.0
+                              }
+                            ],
+                            "majorOrganFailure": [
+                              {
+                                "benefitPercentage": 100.0
+                              }
+                            ],
+                            "endStageKidneyFailure": [
+                              {
+                                "benefitPercentage": 100.0
+                              }
+                            ]
+                          }
+                        ],
+                        "cancerRelatedConditions": [
+                          {
+                            "cancerRelatedConditions": null,
+                            "benignBrainTumorOrSpinalTumor": null,
+                            "invasiveCancer": [
+                              {
+                                "benefitPercentage": 100.0,
+                                "stage0CancerIsIncludedWith": "Non-Invasive Cancer"
+                              }
+                            ],
+                            "nonInvasiveCancer": [
+                              {
+                                "benefitPercentage": 25.0
+                              }
+                            ],
+                            "skinCancer": [
+                              {
+                                "benefitPercentage": 2.5
+                              }
+                            ],
+                            "covid19": [
+                              {
+                                "diagnosisType": "ALL",
+                                "benefitType": "Percentage"
+                              }
+                            ],
+                            "infectiousDisease": [
+                              {
+                                "infectiousDiseasesIncluded": "Open Ended Benefit",
+                                "benefitType": "Percentage",
+                                "infectiousDiseaseModerate": [
+                                  {
+                                    "benefitPercentage": 25.0,
+                                    "hospitalizationTimeOfConfinement": 3
+                                  }
+                                ],
+                                "infectiousDiseaseSevere": [
+                                  {
+                                    "benefitPercentage": 50.0,
+                                    "hospitalizationTimeOfConfinement": 7
+                                  }
+                                ]
+                              }
+                            ],
+                            "functionalLoss": [
+                              {
+                                "coma": [
+                                  {
+                                    "benefitPercentage": 100.0
+                                  }
+                                ],
+                                "paralysis": [
+                                  {
+                                    "benefitPercentage": 100.0
+                                  }
+                                ]
+                              }
+                            ],
+                            "childhoodDiseasesAndConditions": [
+                              {
+                                "childhoodDiseasesAndConditions": "Not Included"
+                              }
+                            ],
+                            "mentalHealth": [
+                              {
+                                "significantMentalIllness": [
+                                  {
+                                    "benefitPercentage": 50.0
+                                  }
+                                ]
+                              }
+                            ],
+                            "progressiveDiseases": [
+                              {
+                                "advancedDementia": [
+                                  {
+                                    "benefitPercentage": 25.0,
+                                    "minADLsToReceiveBenefit": "2 of 6 ADLs"
+                                  }
+                                ],
+                                "amyotrophicLateralSclerosis": [
+                                  {
+                                    "benefitPercentage": 25.0
+                                  }
+                                ],
+                                "advancedParkinsonsDisease": [
+                                  {
+                                    "benefitPercentage": 25.0,
+                                    "minADLsToReceiveBenefit": "2 of 6 ADLs"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+}
