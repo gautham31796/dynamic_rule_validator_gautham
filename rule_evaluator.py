@@ -25,7 +25,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-# Normalize text for comparison (not used in strict match but kept for condition logic)
+# Normalize utility (used for condition matching only)
 def normalize(text):
     return re.sub(r'[^a-z0-9]', '', str(text).lower())
 
@@ -47,7 +47,7 @@ def resolve_placeholder(json_data, key, field_map):
         logger.error(f"Failed to resolve <{key}>: {e}")
         return ""
 
-# Rule evaluation function with strict matching
+# Evaluate rules against the parsed document and input data
 def evaluate_rules(rules_df, document_data, input_data, field_map):
     results = []
 
@@ -58,7 +58,7 @@ def evaluate_rules(rules_df, document_data, input_data, field_map):
         formula = row.get('Formula', '')
         input_conditions = row.get('Input Value', '')
 
-        # Evaluate input conditions
+        # Evaluate conditional inputs
         if input_conditions:
             all_conditions_pass = True
             for cond in str(input_conditions).splitlines():
@@ -80,7 +80,7 @@ def evaluate_rules(rules_df, document_data, input_data, field_map):
                 results.append({"Rule No": rule_id, "Status": "SKIPPED", "Reason": "Condition mismatch"})
                 continue
 
-        # Resolve placeholders in expected output
+        # Replace all placeholders in expected output
         placeholders = re.findall(r"<(.*?)>", expected)
         for key in placeholders:
             val = resolve_placeholder(input_data, key, field_map)
@@ -90,24 +90,33 @@ def evaluate_rules(rules_df, document_data, input_data, field_map):
         logger.debug(f"[CHECK] Final expected string after placeholder resolution: {expected}")
         found = False
 
+        # Strict match in paragraph
         if match_type.lower() == "paragraph":
-            for para in document_data["paragraphs"]:
-                if expected.strip() in para["text"]:
-                    logger.debug(f"[MATCH] Rule {rule_id} found in paragraph: {para['text']}")
+            for i, para in enumerate(document_data["paragraphs"]):
+                para_text = para["text"]
+                page_num = para.get("page", "?")
+                if expected.strip() in para_text:
+                    logger.debug(f"[MATCH] Rule {rule_id} matched in paragraph #{i + 1} on page {page_num}")
+                    logger.debug(f"[TEXT] {para_text.strip()}")
                     found = True
                     break
 
+        # Strict match in table
         elif match_type.lower() == "table":
-            for table in document_data["tables"]:
-                for row in table:
-                    for cell in row:
+            for t_index, table in enumerate(document_data["tables"]):
+                for r_index, row in enumerate(table):
+                    for c_index, cell in enumerate(row):
                         if expected.strip() in cell:
-                            logger.debug(f"[MATCH] Rule {rule_id} found in table cell: {cell}")
+                            logger.debug(f"[MATCH] Rule {rule_id} matched in table {t_index + 1}, row {r_index + 1}, cell {c_index + 1}")
+                            logger.debug(f"[TEXT] {cell.strip()}")
                             found = True
                             break
                     if found:
                         break
+                if found:
+                    break
 
+        # Store result
         if found:
             results.append({"Rule No": rule_id, "Status": "PASS", "Reason": ""})
         else:
