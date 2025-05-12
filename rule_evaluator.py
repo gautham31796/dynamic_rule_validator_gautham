@@ -25,11 +25,11 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-# Normalize utility
+# Normalize text for comparison (not used in strict match but kept for condition logic)
 def normalize(text):
     return re.sub(r'[^a-z0-9]', '', str(text).lower())
 
-# JSONPath-based placeholder resolution with list flattening
+# Resolve placeholder using jsonpath
 def resolve_placeholder(json_data, key, field_map):
     json_path = field_map.get(key, key)
     try:
@@ -47,7 +47,7 @@ def resolve_placeholder(json_data, key, field_map):
         logger.error(f"Failed to resolve <{key}>: {e}")
         return ""
 
-# Rule evaluation engine with multi-value comparison
+# Rule evaluation function with strict matching
 def evaluate_rules(rules_df, document_data, input_data, field_map):
     results = []
 
@@ -58,7 +58,7 @@ def evaluate_rules(rules_df, document_data, input_data, field_map):
         formula = row.get('Formula', '')
         input_conditions = row.get('Input Value', '')
 
-        # Handle compound input logic
+        # Evaluate input conditions
         if input_conditions:
             all_conditions_pass = True
             for cond in str(input_conditions).splitlines():
@@ -80,7 +80,7 @@ def evaluate_rules(rules_df, document_data, input_data, field_map):
                 results.append({"Rule No": rule_id, "Status": "SKIPPED", "Reason": "Condition mismatch"})
                 continue
 
-        # Placeholder substitution
+        # Resolve placeholders in expected output
         placeholders = re.findall(r"<(.*?)>", expected)
         for key in placeholders:
             val = resolve_placeholder(input_data, key, field_map)
@@ -88,32 +88,33 @@ def evaluate_rules(rules_df, document_data, input_data, field_map):
                 expected = expected.replace(f"<{key}>", val.strip())
 
         logger.debug(f"[CHECK] Final expected string after placeholder resolution: {expected}")
-        expected_norm = normalize(expected)
         found = False
 
         if match_type.lower() == "paragraph":
             for para in document_data["paragraphs"]:
-                para_text = normalize(para["text"])
-                if expected_norm in para_text:
+                if expected.strip() in para["text"]:
+                    logger.debug(f"[MATCH] Rule {rule_id} found in paragraph: {para['text']}")
                     found = True
                     break
 
         elif match_type.lower() == "table":
             for table in document_data["tables"]:
                 for row in table:
-                    if any(expected_norm in normalize(cell) for cell in row):
-                        found = True
+                    for cell in row:
+                        if expected.strip() in cell:
+                            logger.debug(f"[MATCH] Rule {rule_id} found in table cell: {cell}")
+                            found = True
+                            break
+                    if found:
                         break
 
         if found:
             results.append({"Rule No": rule_id, "Status": "PASS", "Reason": ""})
         else:
-            reason = f"Expected text not found. Expected: '{expected}'"
+            reason = f"Expected text not found exactly. Expected: '{expected}'"
             results.append({"Rule No": rule_id, "Status": "FAIL", "Reason": reason})
             logger.debug(f"DEBUG FAIL - Rule {rule_id} =>")
-            logger.debug(f"Expected: {expected_norm}")
-            document_text = normalize(' '.join(p['text'] for p in document_data['paragraphs']))
-            logger.debug(f"Document Content (First 300 chars):\n{document_text[:300]}")
+            logger.debug(f"Expected (raw): {expected}")
             logger.debug("-------------")
 
     return results
