@@ -1,0 +1,38 @@
+2025-05-11 17:23:40,797 - DEBUG - [TRACE] Scanning JSON for <lateEntrantEOI> using path: lateEntrantEOI
+2025-05-11 17:23:40,797 - DEBUG - [TRACE] JSON sample: {
+  "lateEntrantEOI": true,
+  "enrollmentAboveGIEOI": true,
+  "employeeType": "Employee",
+  "dependentCoverage": [
+    "Spouse",
+    "Child"
+  ]
+}
+2025-05-11 17:23:40,798 - DEBUG - [TRACE] Matches found: [DatumInContext(value=True, path=Fields('lateEntrantEOI'), context=DatumInContext(value={'lateEntrantEOI': True, 'enrollmentAboveGIEOI': True, 'employeeType': 'Employee', 'dependentCoverage': ['Spouse', 'Child']}, path=Root(), context=None))]
+2025-05-11 17:23:40,798 - DEBUG - [COND] Evaluating: lateEntrantEOI == True -> Actual: True
+2025-05-11 17:23:40,803 - DEBUG - [TRACE] Scanning JSON for <dependentCoverage> using path: dependentCoverage
+2025-05-11 17:23:40,803 - DEBUG - [TRACE] JSON sample: {
+  "lateEntrantEOI": true,
+  "enrollmentAboveGIEOI": true,
+  "employeeType": "Employee",
+  "dependentCoverage": [
+    "Spouse",
+    "Child"
+  ]
+}
+2025-05-11 17:23:40,804 - DEBUG - [TRACE] Matches found: [DatumInContext(value=['Spouse', 'Child'], path=Fields('dependentCoverage'), context=DatumInContext(value={'lateEntrantEOI': True, 'enrollmentAboveGIEOI': True, 'employeeType': 'Employee', 'dependentCoverage': ['Spouse', 'Child']}, path=Root(), context=None))]
+2025-05-11 17:23:40,804 - DEBUG - [COND] Evaluating: dependentCoverage == Spouse" , "Child -> Actual: Spouse, Child
+2025-05-11 17:23:40,822 - DEBUG - [TRACE] Scanning JSON for <employeeType> using path: employeeType
+2025-05-11 17:23:40,822 - DEBUG - [TRACE] JSON sample: {
+  "lateEntrantEOI": true,
+  "enrollmentAboveGIEOI": true,
+  "employeeType": "Employee",
+  "dependentCoverage": [
+    "Spouse",
+    "Child"
+  ]
+}
+2025-05-11 17:23:40,824 - DEBUG - [TRACE] Matches found: [DatumInContext(value='Employee', path=Fields('employeeType'), context=DatumInContext(value={'lateEntrantEOI': True, 'enrollmentAboveGIEOI': True, 'employeeType': 'Employee', 'dependentCoverage': ['Spouse', 'Child']}, path=Root(), context=None))]
+2025-05-11 17:23:40,825 - DEBUG - [CHECK] Final expected string after placeholder resolution: INSURABILITY REQUIREMENT
+
+An eligble Employee may enroll for a Critical Illness Benefit Amount up to the Guaranteed Issue Amount shown in the Schedule of Benefit Amount.
