@@ -108,7 +108,7 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
 
         if expected_norm in normalize_text(all_text):
             for text, span in all_spans:
-                if normalize_text(text) in expected_norm:
+                if normalize_text(text) == expected_norm:
                     font_name = span.get("font", "").lower()
                     font_size = span.get("size", 0)
                     is_bold = "bold" in font_name or (span.get("flags", 0) & 2 != 0)
@@ -146,7 +146,7 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
         if isinstance(actual_val, dict):
             actual_val = list(actual_val.keys())[0] if actual_val else ""
 
-        # Parse multiple values in quotes: "Spouse", "Child"
+        # Parse values from: dependentCoverage = "Spouse", "Child"
         expected_values = re.findall(r'"([^"]+)"', expected_val) or [v.strip() for v in expected_val.split(',')]
         expected_values = [normalize_text(v) for v in expected_values]
 
@@ -164,7 +164,7 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
             if actual_norm != expected_values[0]:
                 return 'SKIPPED', f"Condition Mismatch for {key}: expected '{expected_values[0]}', got '{actual_norm}'"
 
-    # Replace placeholders
+    # Replace placeholders in output
     placeholders = re.findall(r"<(.*?)>", expected)
     for key in placeholders:
         val = input_data.get(key, "")
@@ -174,6 +174,8 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
 
     expected_clean = normalize_text(expected)
     document_text_clean = normalize_text(document_text)
+
+    print(f"[DEBUG] FINAL TEXT MATCH CHECK — expected: {expected_clean}")
 
     if expected_clean in document_text_clean:
         if style_req:
