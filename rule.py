@@ -31,6 +31,23 @@ def find_paragraph_with_text(doc_path, target_text):
 
 def validate_style(paragraph, style_requirements):
     style_req = style_requirements.lower()
+    required_font = None
+    required_size = None
+    required_bold = False
+
+    if "style:" in style_req:
+        try:
+            required_font = style_req.split("style:")[1].split()[0].strip().lower()
+        except:
+            pass
+    if "size:" in style_req:
+        try:
+            required_size = float(style_req.split("size:")[1].split()[0])
+        except:
+            pass
+    if "bold" in style_req:
+        required_bold = True
+
     font_match = size_match = bold_match = False
 
     for run in paragraph.runs:
@@ -42,35 +59,46 @@ def validate_style(paragraph, style_requirements):
         font_size = font.size.pt if font.size else None
         is_bold = run.bold
 
-        if "times new roman" in style_req and "times new roman" in font_name:
+        if required_font and required_font in font_name:
             font_match = True
-        if "bold" in style_req and is_bold:
+        if required_size and font_size and abs(font_size - required_size) < 0.2:
+            size_match = True
+        if required_bold and is_bold:
             bold_match = True
-        if "size:" in style_req and font_size:
-            try:
-                expected_size = float(style_req.split("size:")[1].split()[0])
-                if abs(font_size - expected_size) < 0.2:
-                    size_match = True
-            except:
-                pass
 
-    all_requirements = []
-    if "times new roman" in style_req:
-        all_requirements.append(font_match)
-    if "bold" in style_req:
-        all_requirements.append(bold_match)
-    if "size:" in style_req:
-        all_requirements.append(size_match)
+    results = []
+    if required_font:
+        results.append(font_match)
+    if required_size:
+        results.append(size_match)
+    if required_bold:
+        results.append(bold_match)
 
-    if all(all_requirements):
+    if all(results):
         return True, "Style matched"
-    else:
-        return False, f"Style mismatch: font_match={font_match}, bold_match={bold_match}, size_match={size_match}"
+    return False, f"Style mismatch: font_match={font_match}, bold_match={bold_match}, size_match={size_match}"
 
 def validate_pdf_style(pdf_path, expected_text, style_requirements):
     doc = fitz.open(pdf_path)
-    style_req = style_requirements.lower()
     expected_norm = normalize_text(expected_text)
+    style_req = style_requirements.lower()
+
+    required_font = None
+    required_bold = False
+    required_size = None
+
+    if "style:" in style_req:
+        try:
+            required_font = style_req.split("style:")[1].split()[0].strip().lower()
+        except:
+            pass
+    if "bold" in style_req:
+        required_bold = True
+    if "size:" in style_req:
+        try:
+            required_size = float(style_req.split("size:")[1].split()[0])
+        except:
+            pass
 
     for page in doc:
         all_spans = []
@@ -84,27 +112,22 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
                     all_spans.append((text, span))
                     all_text += f"{text} "
 
-        all_text_norm = normalize_text(all_text)
-
-        if expected_norm in all_text_norm:
+        if expected_norm in normalize_text(all_text):
             for text, span in all_spans:
                 if normalize_text(text) in expected_norm:
-                    font_name = span.get("font", "")
+                    font_name = span.get("font", "").lower()
                     font_size = span.get("size", 0)
+                    is_bold = "bold" in font_name
 
-                    if "times new roman" in style_req and "times" not in font_name.lower():
-                        return False, f"Font mismatch: got '{font_name}'"
-                    if "bold" in style_req and "bold" not in font_name.lower():
+                    if required_font and required_font not in font_name:
+                        return False, f"Font mismatch: got '{font_name}', expected '{required_font}'"
+                    if required_bold and not is_bold:
                         return False, f"Bold style missing in font '{font_name}'"
-                    if "size:" in style_req:
-                        try:
-                            expected_size = float(style_req.split("size:")[1].split()[0])
-                            if abs(font_size - expected_size) > 0.5:
-                                return False, f"Font size mismatch: got {font_size}, expected {expected_size}"
-                        except:
-                            pass
+                    if required_size and abs(font_size - required_size) > 0.5:
+                        return False, f"Font size mismatch: got {font_size}, expected {required_size}"
+
                     return True, "Style matched"
-            return True, "Text matched, but could not confirm styling span — assuming pass"
+            return True, "Text matched, but no exact span confirmed — assuming pass"
 
     return False, "Text not found in PDF for style validation"
 
@@ -132,14 +155,15 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
 
         if isinstance(actual_val, list):
             actual_norm_list = [normalize_text(str(v)) for v in actual_val]
+            print(f"[DEBUG] Rule {rule_row['Output Identifier']} — expected: {expected_values}, actual: {actual_norm_list}")
             if not all(val in actual_norm_list for val in expected_values):
-                return 'SKIPPED', f"List Mismatch for {key}: {expected_values} not in {actual_val}"
+                return 'SKIPPED', f"List Mismatch for {key}: missing values from {expected_values}"
         else:
             actual_norm = normalize_text(str(actual_val))
             if len(expected_values) > 1:
                 return 'SKIPPED', f"Expected multiple values for {key} but field is not a list"
             if actual_norm != expected_values[0]:
-                return 'SKIPPED', f"Condition Mismatch for {key}"
+                return 'SKIPPED', f"Condition Mismatch for {key}: expected '{expected_values[0]}', got '{actual_norm}'"
 
     # Replace placeholders
     placeholders = re.findall(r"<(.*?)>", expected)
@@ -177,8 +201,8 @@ def load_rules(excel_path):
 
 def main():
     excel_path = "testdata_1.xlsx"
-    document_path = "New_York_Life_Insurance.docx"  # or .docx
-    json_path = "test.json"
+    document_path = "New_York_Life_Insurance.pdf"  # or .docx
+    json_path = "testdata.json"
 
     rules_df = load_rules(excel_path)
 
