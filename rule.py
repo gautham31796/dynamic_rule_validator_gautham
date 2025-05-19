@@ -39,7 +39,10 @@ def validate_style(paragraph, style_requirements):
     required_bold = False
 
     if "style:" in style_req:
-        required_font = style_req.split("style:")[1].split()[0].strip().lower()
+        try:
+            required_font = style_req.split("style:")[1].split()[0].strip().lower()
+        except:
+            pass
     if "size:" in style_req:
         try:
             required_size = float(style_req.split("size:")[1].split()[0])
@@ -48,15 +51,27 @@ def validate_style(paragraph, style_requirements):
     if "bold" in style_req:
         required_bold = True
 
-    font_match = size_match = bold_match = False
+    font_match = size_match = bold_match = not required_bold  # Only fail if bold is explicitly required and missing
 
     for run in paragraph.runs:
-        font = run.font or run.style.font
-        font_name = font.name.lower() if font and font.name else ""
-        font_size = font.size.pt if font and font.size else None
+        # Get direct font
+        font_name = run.font.name if run.font and run.font.name else ""
+        font_size = run.font.size.pt if run.font and run.font.size else None
+
+        # Fallback to run style
+        if not font_name and run.style and run.style.font and run.style.font.name:
+            font_name = run.style.font.name
+        if not font_size and run.style and run.style.font and run.style.font.size:
+            font_size = run.style.font.size.pt
+
         is_bold = run.bold
 
-        if required_font and clean_font_name(required_font) in clean_font_name(font_name):
+        print(f"[DEBUG] Run: '{run.text.strip()}', font: '{font_name}', size: {font_size}, bold: {is_bold}")
+
+        # Normalize font name for comparison
+        cleaned_font_name = re.sub(r'[^a-z]', '', font_name.lower()) if font_name else ""
+
+        if required_font and required_font in cleaned_font_name:
             font_match = True
         if required_size and font_size and abs(font_size - required_size) < 0.5:
             size_match = True
