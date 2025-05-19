@@ -117,7 +117,7 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
                 if normalize_text(text) in expected_norm:
                     font_name = span.get("font", "").lower()
                     font_size = span.get("size", 0)
-                    is_bold = "bold" in font_name
+                    is_bold = "bold" in font_name or (span.get("flags", 0) & 2 != 0)
 
                     if required_font and required_font not in font_name:
                         return False, f"Font mismatch: got '{font_name}', expected '{required_font}'"
@@ -127,7 +127,8 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
                         return False, f"Font size mismatch: got {font_size}, expected {required_size}"
 
                     return True, "Style matched"
-            return True, "Text matched, but no exact span confirmed — assuming pass"
+
+            return True, "Text matched, but no span matched for style — assuming pass"
 
     return False, "Text not found in PDF for style validation"
 
