@@ -91,6 +91,8 @@ def validate_style(paragraph, style_requirements):
     return False, f"Style mismatch: font_match={font_match}, bold_match={bold_match}, size_match={size_match}"
 
 def validate_pdf_style(pdf_path, expected_text, style_requirements):
+    import re
+
     doc = fitz.open(pdf_path)
     expected_norm = normalize_text(expected_text)
     style_req = style_requirements.lower()
@@ -100,7 +102,10 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
     required_size = None
 
     if "style:" in style_req:
-        required_font = style_req.split("style:")[1].split()[0].strip().lower()
+        try:
+            required_font = style_req.split("style:")[1].split()[0].strip().lower()
+        except:
+            pass
     if "bold" in style_req:
         required_bold = True
     if "size:" in style_req:
@@ -121,25 +126,35 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
                     all_spans.append((text, span))
                     all_text += f"{text} "
 
+        # Text must be found somewhere in the page
         if expected_norm in normalize_text(all_text):
             for text, span in all_spans:
-                if normalize_text(text) == expected_norm:
+                norm_span_text = normalize_text(text)
+                if norm_span_text in expected_norm or expected_norm.startswith(norm_span_text):
                     font_name = span.get("font", "").lower()
                     font_size = span.get("size", 0)
                     is_bold = "bold" in font_name or (span.get("flags", 0) & 2 != 0)
 
-                    if required_font and clean_font_name(required_font) not in clean_font_name(font_name):
-                        return False, f"Font mismatch: got '{font_name}', expected '{required_font}'"
-                    if required_bold and not is_bold:
-                        return False, f"Bold style missing in font '{font_name}'"
+                    print(f"[DEBUG] PDF Span matched: '{text}' | font: '{font_name}', size: {font_size}, bold: {is_bold}")
+
+                    font_match = size_match = bold_match = True
+
+                    if required_font and required_font not in re.sub(r'[^a-z]', '', font_name):
+                        font_match = False
                     if required_size and abs(font_size - required_size) > 0.5:
-                        return False, f"Font size mismatch: got {font_size}, expected {required_size}"
+                        size_match = False
+                    if required_bold and not is_bold:
+                        bold_match = False
 
-                    return True, "Style matched"
+                    if font_match and size_match and (not required_bold or bold_match):
+                        return True, "Style matched"
+                    else:
+                        return False, f"Style mismatch: font_match={font_match}, size_match={size_match}, bold_match={bold_match}"
 
-            return True, "Text matched, but no span matched for style — assuming pass"
+            # Text found but no matching styled span
+            return False, "Text matched, but no span matched for style validation"
 
-    return False, "Text not found in PDF for style validation"
+    return False, "Expected text not found in PDF for style validation"
 
 def evaluate_rule(rule_row, document_text, input_data, document_path):
     rule_id = rule_row.get('Output Identifier', 'N/A')
