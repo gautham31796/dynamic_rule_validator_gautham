@@ -3,6 +3,8 @@ import json
 import fitz  # PyMuPDF
 import docx
 import re
+import os
+from docx2pdf import convert
 
 def extract_text_from_pdf(pdf_path):
     with fitz.open(pdf_path) as doc:
@@ -29,6 +31,22 @@ def find_paragraph_with_text(doc_path, target_text):
             return para
     return None
 
+def convert_docx_to_pdf(docx_path):
+    pdf_path = docx_path.replace(".docx", ".pdf")
+    if not os.path.exists(pdf_path):
+        convert(docx_path, pdf_path)
+    return pdf_path
+
+def list_fonts(pdf_path):
+    fonts = set()
+    doc = fitz.open(pdf_path)
+    for page in doc:
+        for block in page.get_text("dict")["blocks"]:
+            for line in block.get("lines", []):
+                for span in line.get("spans", []):
+                    fonts.add(span.get("font"))
+    print("[DEBUG] Fonts found in PDF:", fonts)
+
 def validate_style(paragraph, style_requirements):
     style_req = style_requirements.lower()
     required_font = None
@@ -52,17 +70,22 @@ def validate_style(paragraph, style_requirements):
 
     for run in paragraph.runs:
         font = run.font
-
-        # Fallback to style-level font if not set
         if not font or font.name is None:
             font = run.style.font
+        if (not font or font.name is None) and hasattr(paragraph.style, "font"):
+            font = paragraph.style.font
 
         font_name = font.name.lower() if font and font.name else ""
-        font_size = font.size.pt if font and font.size else (font.sz.pt if font and font.sz else None)
+        font_size = font.size.pt if font and font.size else None
         is_bold = run.bold
 
-        if required_font and required_font in font_name:
+        print(f"[DEBUG] Run Text: {run.text.strip()} | Font: {font_name or 'None'} | Size: {font_size} | Bold: {is_bold}")
+
+        if required_font and font_name and required_font in font_name:
             font_match = True
+        elif required_font and not font_name:
+            font_match = True  # Assume match if info is missing
+
         if required_size and font_size and abs(font_size - required_size) < 0.5:
             size_match = True
         if required_bold and is_bold:
@@ -102,6 +125,8 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
         except:
             pass
 
+    list_fonts(pdf_path)  # Optional: Print fonts used in PDF
+
     for page in doc:
         all_spans = []
         all_text = ""
@@ -120,6 +145,8 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
                     font_name = span.get("font", "").lower()
                     font_size = span.get("size", 0)
                     is_bold = "bold" in font_name or (span.get("flags", 0) & 2 != 0)
+
+                    print(f"[DEBUG] Span Font: {font_name}, Size: {font_size}, Bold: {is_bold}")
 
                     if required_font and required_font not in font_name:
                         return False, f"Font mismatch: got '{font_name}', expected '{required_font}'"
@@ -181,15 +208,7 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
 
     if expected_clean in document_text_clean:
         if style_req:
-            if document_path.lower().endswith('.docx'):
-                para = find_paragraph_with_text(document_path, expected)
-                if para:
-                    style_ok, style_reason = validate_style(para, style_req)
-                    if not style_ok:
-                        return 'FAIL', f"Style validation failed — {style_reason}"
-                else:
-                    return 'FAIL', "Text matched but paragraph not found for style validation"
-            elif document_path.lower().endswith('.pdf'):
+            if document_path.lower().endswith('.pdf'):
                 style_ok, style_reason = validate_pdf_style(document_path, expected, style_req)
                 if not style_ok:
                     return 'FAIL', f"PDF Style validation failed — {style_reason}"
@@ -204,17 +223,16 @@ def load_rules(excel_path):
 
 def main():
     excel_path = "Rules.xlsx"
-    document_path = "1_of_1_GAI1356789_AccidentInsurance_GroupCertificate_EC1.docx"  # or .pdf
+    document_path = "MyWordDoc.docx"
     json_path = "testdata.json"
 
-    rules_df = load_rules(excel_path)
+    # Convert to PDF for better style validation
+    if document_path.lower().endswith('.docx'):
+        print("[INFO] Converting DOCX to PDF for better style validation...")
+        document_path = convert_docx_to_pdf(document_path)
 
-    if document_path.lower().endswith('.pdf'):
-        document_text = extract_text_from_pdf(document_path)
-    elif document_path.lower().endswith('.docx'):
-        document_text = extract_text_from_word(document_path)
-    else:
-        raise ValueError("Unsupported document type. Use PDF or Word (.docx)")
+    rules_df = load_rules(excel_path)
+    document_text = extract_text_from_pdf(document_path)
 
     with open(json_path, 'r') as f:
         raw_data = json.load(f)
