@@ -29,6 +29,9 @@ def find_paragraph_with_text(doc_path, target_text):
             return para
     return None
 
+def clean_font_name(font_name):
+    return re.sub(r'[^a-z]', '', font_name.lower())
+
 def validate_style(paragraph, style_requirements):
     style_req = style_requirements.lower()
     required_font = None
@@ -36,10 +39,7 @@ def validate_style(paragraph, style_requirements):
     required_bold = False
 
     if "style:" in style_req:
-        try:
-            required_font = style_req.split("style:")[1].split()[0].strip().lower()
-        except:
-            pass
+        required_font = style_req.split("style:")[1].split()[0].strip().lower()
     if "size:" in style_req:
         try:
             required_size = float(style_req.split("size:")[1].split()[0])
@@ -51,17 +51,12 @@ def validate_style(paragraph, style_requirements):
     font_match = size_match = bold_match = False
 
     for run in paragraph.runs:
-        font = run.font
-
-        # Fallback to style-level font if not set
-        if not font or font.name is None:
-            font = run.style.font
-
+        font = run.font or run.style.font
         font_name = font.name.lower() if font and font.name else ""
-        font_size = font.size.pt if font and font.size else (font.sz.pt if font and font.sz else None)
+        font_size = font.size.pt if font and font.size else None
         is_bold = run.bold
 
-        if required_font and required_font in font_name:
+        if required_font and clean_font_name(required_font) in clean_font_name(font_name):
             font_match = True
         if required_size and font_size and abs(font_size - required_size) < 0.5:
             size_match = True
@@ -90,10 +85,7 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
     required_size = None
 
     if "style:" in style_req:
-        try:
-            required_font = style_req.split("style:")[1].split()[0].strip().lower()
-        except:
-            pass
+        required_font = style_req.split("style:")[1].split()[0].strip().lower()
     if "bold" in style_req:
         required_bold = True
     if "size:" in style_req:
@@ -121,7 +113,7 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
                     font_size = span.get("size", 0)
                     is_bold = "bold" in font_name or (span.get("flags", 0) & 2 != 0)
 
-                    if required_font and required_font not in font_name:
+                    if required_font and clean_font_name(required_font) not in clean_font_name(font_name):
                         return False, f"Font mismatch: got '{font_name}', expected '{required_font}'"
                     if required_bold and not is_bold:
                         return False, f"Bold style missing in font '{font_name}'"
@@ -159,10 +151,12 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
         if isinstance(actual_val, list):
             actual_norm_list = [normalize_text(str(v)) for v in actual_val]
             print(f"[DEBUG] Rule {rule_row['Output Identifier']} — expected: {expected_values}, actual: {actual_norm_list}")
-            if not all(val in actual_norm_list for val in expected_values):
-                return 'SKIPPED', f"List Mismatch for {key}: missing values from {expected_values}"
+            missing = [val for val in expected_values if val not in actual_norm_list]
+            if missing:
+                return 'SKIPPED', f"List Mismatch for {key}: missing values {missing}"
         else:
             actual_norm = normalize_text(str(actual_val))
+            print(f"[DEBUG] Rule {rule_row['Output Identifier']} — expected: {expected_values[0]}, actual: {actual_norm}")
             if len(expected_values) > 1:
                 return 'SKIPPED', f"Expected multiple values for {key} but field is not a list"
             if actual_norm != expected_values[0]:
