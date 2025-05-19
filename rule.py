@@ -127,15 +127,20 @@ def validate_pdf_style(pdf_path, expected_text, style_requirements):
     return False, "Text not found in PDF for style validation"
 
 def evaluate_rule(rule_row, document_text, input_data, document_path):
+    rule_id = rule_row.get('Output Identifier', 'N/A')
     input_val = rule_row.get('Input Value', '')
     expected = rule_row['Output Language']
     style_req = rule_row.get('Style', '').strip()
 
+    print(f"\n[DEBUG] Evaluating Rule {rule_id}")
+    print(f"[DEBUG] Raw input_val = {repr(input_val)}")
+
     input_data_lower = {k.lower(): v for k, v in input_data.items()}
 
-    print(f"[DEBUG] Raw input_val = {repr(input_val)}")
     all_conditions = [cond.strip() for cond in re.split(r'\n|;', input_val) if cond.strip()]
-    print(f"[DEBUG] Parsed conditions = {all_conditions}")
+    print(f"[DEBUG] Parsed conditions ({len(all_conditions)}):")
+    for cond in all_conditions:
+        print(f"  -> {cond}")
 
     for cond in all_conditions:
         if '=' not in cond:
@@ -154,19 +159,19 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
 
         if isinstance(actual_val, list):
             actual_norm_list = [normalize_text(str(v)) for v in actual_val]
-            print(f"[DEBUG] Rule {rule_row.get('Output Identifier')} — key: {key}, expected: {expected_values}, actual: {actual_norm_list}")
+            print(f"[DEBUG] Compare list — key: {key}, expected: {expected_values}, actual: {actual_norm_list}")
             missing = [val for val in expected_values if val not in actual_norm_list]
             if missing:
                 return 'SKIPPED', f"List Mismatch for {key}: missing values {missing}"
         else:
             actual_norm = normalize_text(str(actual_val))
-            print(f"[DEBUG] Rule {rule_row.get('Output Identifier')} — key: {key}, expected: {expected_values[0]}, actual: {actual_norm}")
+            print(f"[DEBUG] Compare single — key: {key}, expected: {expected_values[0]}, actual: {actual_norm}")
             if len(expected_values) > 1:
                 return 'SKIPPED', f"Expected multiple values for {key} but field is not a list"
             if actual_norm != expected_values[0]:
                 return 'SKIPPED', f"Condition Mismatch for {key}: expected '{expected_values[0]}', got '{actual_norm}'"
 
-    # Replace placeholders
+    # Replace placeholders in expected text
     placeholders = re.findall(r"<(.*?)>", expected)
     for key in placeholders:
         val = input_data.get(key, "")
@@ -177,7 +182,7 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
     expected_clean = normalize_text(expected)
     document_text_clean = normalize_text(document_text)
 
-    print(f"[DEBUG] FINAL TEXT MATCH CHECK — expected: {expected_clean}")
+    print(f"[DEBUG] FINAL TEXT MATCH CHECK — expected: {expected_clean[:80]}...")
 
     if expected_clean in document_text_clean:
         if style_req:
@@ -223,14 +228,14 @@ def main():
     output_data = []
 
     for _, row in rules_df.iterrows():
-        rule_id = row.get('Output Identifier', 'N/A')
+        print(f"\n[INFO] Running rule: {row.get('Output Identifier')}")
         result, reason = evaluate_rule(row, document_text, input_data, document_path)
         output_data.append({
-            "Output Identifier": rule_id,
+            "Output Identifier": row.get('Output Identifier'),
             "Status": result,
             "Reason": reason
         })
-        print(f"Rule {rule_id}: {result} — {reason}")
+        print(f"[RESULT] Rule {row.get('Output Identifier')}: {result} — {reason}")
 
     result_df = pd.DataFrame(output_data)
     result_df.to_excel("rule_results.xlsx", index=False)
