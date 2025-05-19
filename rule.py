@@ -52,16 +52,18 @@ def validate_style(paragraph, style_requirements):
 
     for run in paragraph.runs:
         font = run.font
-        if not font:
-            continue
 
-        font_name = font.name.lower() if font.name else ""
-        font_size = font.size.pt if font.size else None
+        # Fallback to style-level font if not set
+        if not font or font.name is None:
+            font = run.style.font
+
+        font_name = font.name.lower() if font and font.name else ""
+        font_size = font.size.pt if font and font.size else (font.sz.pt if font and font.sz else None)
         is_bold = run.bold
 
         if required_font and required_font in font_name:
             font_match = True
-        if required_size and font_size and abs(font_size - required_size) < 0.2:
+        if required_size and font_size and abs(font_size - required_size) < 0.5:
             size_match = True
         if required_bold and is_bold:
             bold_match = True
@@ -201,8 +203,8 @@ def load_rules(excel_path):
     return df
 
 def main():
-    excel_path = "testdata_1.xlsx"
-    document_path = "New_York_Life_Insurance.pdf"  # or .docx
+    excel_path = "Rules.xlsx"
+    document_path = "1_of_1_GAI1356789_AccidentInsurance_GroupCertificate_EC1.docx"  # or .pdf
     json_path = "testdata.json"
 
     rules_df = load_rules(excel_path)
