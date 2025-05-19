@@ -132,7 +132,10 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
     style_req = rule_row.get('Style', '').strip()
 
     input_data_lower = {k.lower(): v for k, v in input_data.items()}
-    all_conditions = [cond.strip() for cond in input_val.split('\n') if cond.strip()]
+
+    print(f"[DEBUG] Raw input_val = {repr(input_val)}")
+    all_conditions = [cond.strip() for cond in re.split(r'\n|;', input_val) if cond.strip()]
+    print(f"[DEBUG] Parsed conditions = {all_conditions}")
 
     for cond in all_conditions:
         if '=' not in cond:
@@ -146,7 +149,6 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
         if isinstance(actual_val, dict):
             actual_val = list(actual_val.keys())[0] if actual_val else ""
 
-        # Parse values from: dependentCoverage = "Spouse", "Child"
         expected_values = re.findall(r'"([^"]+)"', expected_val) or [v.strip() for v in expected_val.split(',')]
         expected_values = [normalize_text(v) for v in expected_values]
 
@@ -164,7 +166,7 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
             if actual_norm != expected_values[0]:
                 return 'SKIPPED', f"Condition Mismatch for {key}: expected '{expected_values[0]}', got '{actual_norm}'"
 
-    # Replace placeholders in output
+    # Replace placeholders
     placeholders = re.findall(r"<(.*?)>", expected)
     for key in placeholders:
         val = input_data.get(key, "")
