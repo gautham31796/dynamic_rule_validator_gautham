@@ -146,17 +146,19 @@ def evaluate_rule(rule_row, document_text, input_data, document_path):
         if isinstance(actual_val, dict):
             actual_val = list(actual_val.keys())[0] if actual_val else ""
 
-        expected_values = [normalize_text(v.strip().strip('"').strip("'")) for v in expected_val.split(',')]
+        # Parse multiple values in quotes: "Spouse", "Child"
+        expected_values = re.findall(r'"([^"]+)"', expected_val) or [v.strip() for v in expected_val.split(',')]
+        expected_values = [normalize_text(v) for v in expected_values]
 
         if isinstance(actual_val, list):
             actual_norm_list = [normalize_text(str(v)) for v in actual_val]
-            print(f"[DEBUG] Rule {rule_row['Output Identifier']} — expected: {expected_values}, actual: {actual_norm_list}")
+            print(f"[DEBUG] Rule {rule_row.get('Output Identifier')} — key: {key}, expected: {expected_values}, actual: {actual_norm_list}")
             missing = [val for val in expected_values if val not in actual_norm_list]
             if missing:
                 return 'SKIPPED', f"List Mismatch for {key}: missing values {missing}"
         else:
             actual_norm = normalize_text(str(actual_val))
-            print(f"[DEBUG] Rule {rule_row['Output Identifier']} — expected: {expected_values[0]}, actual: {actual_norm}")
+            print(f"[DEBUG] Rule {rule_row.get('Output Identifier')} — key: {key}, expected: {expected_values[0]}, actual: {actual_norm}")
             if len(expected_values) > 1:
                 return 'SKIPPED', f"Expected multiple values for {key} but field is not a list"
             if actual_norm != expected_values[0]:
