@@ -33,8 +33,6 @@ def clean_font_name(font_name):
     return re.sub(r'[^a-z]', '', font_name.lower())
 
 def validate_style(paragraph, style_requirements):
-    import re
-
     style_req = style_requirements.lower()
     required_font = None
     required_size = None
@@ -53,13 +51,10 @@ def validate_style(paragraph, style_requirements):
     if "bold" in style_req:
         required_bold = True
 
-    font_match = size_match = bold_match = not required_bold  # Default true if bold isn't required
-
     for run in paragraph.runs:
         font_name = None
         font_size = None
 
-        # Try run font first
         if run.font and run.font.name:
             font_name = run.font.name
         elif run.style and run.style.font and run.style.font.name:
@@ -67,7 +62,6 @@ def validate_style(paragraph, style_requirements):
         elif paragraph.style and paragraph.style.font and paragraph.style.font.name:
             font_name = paragraph.style.font.name
 
-        # Font size fallback
         if run.font and run.font.size:
             font_size = run.font.size.pt
         elif run.style and run.style.font and run.style.font.size:
@@ -79,25 +73,24 @@ def validate_style(paragraph, style_requirements):
 
         print(f"[DEBUG] Run text: '{run.text.strip()}' | font: {font_name} | size: {font_size} | bold: {is_bold}")
 
-        clean_font_name = re.sub(r'[^a-z]', '', font_name.lower()) if font_name else ""
+        font_match = size_match = bold_match = True
 
-        if required_font and required_font in clean_font_name:
-            font_match = True
-        if required_size and font_size and abs(font_size - required_size) < 0.5:
-            size_match = True
-        if required_bold and is_bold:
-            bold_match = True
+        if required_font:
+            if font_name:
+                clean_font = re.sub(r'[^a-z]', '', font_name.lower())
+                font_match = required_font in clean_font
+            else:
+                font_match = False
 
-    results = []
-    if required_font:
-        results.append(font_match)
-    if required_size:
-        results.append(size_match)
-    if required_bold:
-        results.append(bold_match)
+        if required_size is not None:
+            size_match = font_size is not None and abs(font_size - required_size) < 0.5
 
-    if all(results):
-        return True, "Style matched"
+        if required_bold:
+            bold_match = bool(is_bold)
+
+        if font_match and size_match and bold_match:
+            return True, "Style matched"
+
     return False, f"Style mismatch: font_match={font_match}, size_match={size_match}, bold_match={bold_match}"
 
 def validate_pdf_style(pdf_path, expected_text, style_requirements):
