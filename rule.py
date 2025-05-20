@@ -51,10 +51,14 @@ def validate_style(paragraph, style_requirements):
     if "bold" in style_req:
         required_bold = True
 
+    from docx.shared import Pt
+
     for run in paragraph.runs:
         font_name = None
         font_size = None
+        is_bold = run.bold
 
+        # Font name detection
         if run.font and run.font.name:
             font_name = run.font.name
         elif run.style and run.style.font and run.style.font.name:
@@ -62,6 +66,7 @@ def validate_style(paragraph, style_requirements):
         elif paragraph.style and paragraph.style.font and paragraph.style.font.name:
             font_name = paragraph.style.font.name
 
+        # Font size detection
         if run.font and run.font.size:
             font_size = run.font.size.pt
         elif run.style and run.style.font and run.style.font.size:
@@ -69,7 +74,16 @@ def validate_style(paragraph, style_requirements):
         elif paragraph.style and paragraph.style.font and paragraph.style.font.size:
             font_size = paragraph.style.font.size.pt
 
-        is_bold = run.bold
+        # Fallback: inspect style ID and access from document styles
+        if not font_size:
+            try:
+                style_id = paragraph.style.style_id
+                styles = paragraph._parent.styles
+                style = styles[style_id]
+                if style and style.font.size:
+                    font_size = style.font.size.pt
+            except Exception as e:
+                print(f"[DEBUG] Style fallback exception: {e}")
 
         print(f"[DEBUG] Run text: '{run.text.strip()}' | font: {font_name} | size: {font_size} | bold: {is_bold}")
 
